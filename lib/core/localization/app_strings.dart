@@ -41,6 +41,56 @@ class AppStrings {
   final String isbns;
   final String getBook;
 
+  // Onboarding (3 slides + controls).
+  final String onbTitle1;
+  final String onbBody1;
+  final String onbTitle2;
+  final String onbBody2;
+  final String onbTitle3;
+  final String onbBody3;
+  final String skip;
+  final String next;
+  final String getStarted;
+
+  // Auth — shared fields + login + sign-up.
+  final String email;
+  final String password;
+  final String emailHint;
+  final String passwordHintLogin;
+  final String passwordHintSignup;
+  final String orDivider;
+  final String continueGoogle;
+  final String welcomeBack;
+  final String loginSub;
+  final String forgotPassword;
+  final String logIn;
+  final String newToLumina;
+  final String createAccount;
+  final String createYourAccount;
+  final String signupSub;
+  final String fullName;
+  final String fullNameHint;
+  final String signUp;
+  final String alreadyHaveAccount;
+  final String tos;
+
+  // Settings.
+  final String navSettings;
+  final String settings;
+  final String preferences;
+  final String darkMode;
+  final String languageValue;
+  final String newReleaseAlerts;
+  final String account;
+  final String editProfile;
+  final String editShort;
+  final String changePassword;
+  final String privacyData;
+  final String about;
+  final String helpCenter;
+  final String version;
+  final String logOut;
+
   const AppStrings({
     required this.appName,
     required this.tagline,
@@ -74,6 +124,50 @@ class AppStrings {
     required this.categories,
     required this.isbns,
     required this.getBook,
+    required this.onbTitle1,
+    required this.onbBody1,
+    required this.onbTitle2,
+    required this.onbBody2,
+    required this.onbTitle3,
+    required this.onbBody3,
+    required this.skip,
+    required this.next,
+    required this.getStarted,
+    required this.email,
+    required this.password,
+    required this.emailHint,
+    required this.passwordHintLogin,
+    required this.passwordHintSignup,
+    required this.orDivider,
+    required this.continueGoogle,
+    required this.welcomeBack,
+    required this.loginSub,
+    required this.forgotPassword,
+    required this.logIn,
+    required this.newToLumina,
+    required this.createAccount,
+    required this.createYourAccount,
+    required this.signupSub,
+    required this.fullName,
+    required this.fullNameHint,
+    required this.signUp,
+    required this.alreadyHaveAccount,
+    required this.tos,
+    required this.navSettings,
+    required this.settings,
+    required this.preferences,
+    required this.darkMode,
+    required this.languageValue,
+    required this.newReleaseAlerts,
+    required this.account,
+    required this.editProfile,
+    required this.editShort,
+    required this.changePassword,
+    required this.privacyData,
+    required this.about,
+    required this.helpCenter,
+    required this.version,
+    required this.logOut,
   });
 
   bool get isArabic => this == ar;
@@ -163,6 +257,53 @@ class AppStrings {
     categories: 'Categories',
     isbns: 'ISBNs',
     getBook: 'Get the Book',
+    onbTitle1: 'A universe of stories',
+    onbBody1:
+        'Explore books from every corner of the literary cosmos — curated, not endless.',
+    onbTitle2: 'Find your constellation',
+    onbBody2:
+        'Personalized picks that map to the authors and genres you already love.',
+    onbTitle3: 'Build your library',
+    onbBody3:
+        'Save favorites and keep your whole reading world in one calm place.',
+    skip: 'Skip',
+    next: 'Next',
+    getStarted: 'Get started',
+    email: 'Email',
+    password: 'Password',
+    emailHint: 'you@example.com',
+    passwordHintLogin: '••••••••',
+    passwordHintSignup: 'At least 8 characters',
+    orDivider: 'or',
+    continueGoogle: 'Continue with Google',
+    welcomeBack: 'Welcome back',
+    loginSub: 'Sign in to return to your library.',
+    forgotPassword: 'Forgot password?',
+    logIn: 'Log in',
+    newToLumina: 'New to Lumina?',
+    createAccount: 'Create an account',
+    createYourAccount: 'Create your account',
+    signupSub: 'Start mapping your literary cosmos.',
+    fullName: 'Full name',
+    fullNameHint: 'Amina Reader',
+    signUp: 'Sign up',
+    alreadyHaveAccount: 'Already have an account?',
+    tos: "By signing up you agree to Lumina's Terms of Service and Privacy Policy.",
+    navSettings: 'Settings',
+    settings: 'Settings',
+    preferences: 'Preferences',
+    darkMode: 'Dark mode',
+    languageValue: 'English',
+    newReleaseAlerts: 'New release alerts',
+    account: 'Account',
+    editProfile: 'Edit profile',
+    editShort: 'Edit',
+    changePassword: 'Change password',
+    privacyData: 'Privacy & data',
+    about: 'About',
+    helpCenter: 'Help center',
+    version: 'v1.0.0',
+    logOut: 'Log out',
   );
 
   static const AppStrings ar = AppStrings(
@@ -198,6 +339,50 @@ class AppStrings {
     categories: 'التصنيفات',
     isbns: 'الأرقام المعيارية',
     getBook: 'احصل على الكتاب',
+    onbTitle1: 'عالمٌ من القصص',
+    onbBody1: 'استكشف كتباً من كل ركن في الكون الأدبي — منتقاةً لا لا نهائية.',
+    onbTitle2: 'اعثر على كوكبتك',
+    onbBody2: 'اختياراتٌ مخصّصة تلائم المؤلفين والأنواع التي تحبها أصلاً.',
+    onbTitle3: 'ابنِ مكتبتك',
+    onbBody3: 'احفظ المفضّلة واجمع عالم قراءتك كله في مكانٍ هادئ واحد.',
+    skip: 'تخطٍّ',
+    next: 'التالي',
+    getStarted: 'لنبدأ',
+    email: 'البريد الإلكتروني',
+    password: 'كلمة المرور',
+    emailHint: 'you@example.com',
+    passwordHintLogin: '••••••••',
+    passwordHintSignup: '٨ أحرف على الأقل',
+    orDivider: 'أو',
+    continueGoogle: 'المتابعة عبر Google',
+    welcomeBack: 'مرحباً بعودتك',
+    loginSub: 'سجّل الدخول للعودة إلى مكتبتك.',
+    forgotPassword: 'نسيت كلمة المرور؟',
+    logIn: 'تسجيل الدخول',
+    newToLumina: 'جديدٌ في لومينا؟',
+    createAccount: 'أنشئ حساباً',
+    createYourAccount: 'أنشئ حسابك',
+    signupSub: 'ابدأ رسم كونك الأدبي.',
+    fullName: 'الاسم الكامل',
+    fullNameHint: 'أمينة القارئة',
+    signUp: 'إنشاء حساب',
+    alreadyHaveAccount: 'لديك حسابٌ بالفعل؟',
+    tos: 'بالتسجيل فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بلومينا.',
+    navSettings: 'الإعدادات',
+    settings: 'الإعدادات',
+    preferences: 'التفضيلات',
+    darkMode: 'الوضع الداكن',
+    languageValue: 'العربية',
+    newReleaseAlerts: 'تنبيهات الإصدارات الجديدة',
+    account: 'الحساب',
+    editProfile: 'تعديل الملف الشخصي',
+    editShort: 'تعديل',
+    changePassword: 'تغيير كلمة المرور',
+    privacyData: 'الخصوصية والبيانات',
+    about: 'حول',
+    helpCenter: 'مركز المساعدة',
+    version: 'v1.0.0',
+    logOut: 'تسجيل الخروج',
   );
 
   static AppStrings of(BuildContext context) =>

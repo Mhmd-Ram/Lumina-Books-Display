@@ -6,12 +6,15 @@ import 'core/config/api_config.dart';
 import 'core/network/api_client.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'features/auth/pages/auth_flow.dart';
+import 'features/auth/providers/auth_provider.dart';
 import 'features/catalog/data/books_repository.dart';
 import 'features/catalog/data/open_library_service.dart';
 import 'features/catalog/providers/books_provider.dart';
 import 'features/catalog/providers/search_provider.dart';
 import 'features/favorites/providers/favorites_provider.dart';
 import 'features/home/pages/lumina_shell.dart';
+import 'features/onboarding/pages/onboarding_screen.dart';
 import 'features/splash/pages/splash_screen.dart';
 
 void main() {
@@ -40,6 +43,7 @@ class LuminaApp extends StatelessWidget {
         ChangeNotifierProvider<SearchProvider>(
           create: (context) => SearchProvider(context.read<BooksRepository>()),
         ),
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],
@@ -64,7 +68,7 @@ class LuminaApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: const _SplashGate(),
+            home: const _AppGate(),
           );
         },
       ),
@@ -72,24 +76,38 @@ class LuminaApp extends StatelessWidget {
   }
 }
 
-/// Shows the branded splash on launch, then fades into the main shell.
-class _SplashGate extends StatefulWidget {
-  const _SplashGate();
+/// Drives the launch flow: branded splash → onboarding (first launch) → login /
+/// sign-up (until authenticated) → the main shell. The step is chosen from
+/// [AuthProvider]; transitions cross-fade. In Phase 2, `authStateChanges` will
+/// feed [AuthProvider] so a returning user auto-logs in straight to the shell.
+class _AppGate extends StatefulWidget {
+  const _AppGate();
 
   @override
-  State<_SplashGate> createState() => _SplashGateState();
+  State<_AppGate> createState() => _AppGateState();
 }
 
-class _SplashGateState extends State<_SplashGate> {
+class _AppGateState extends State<_AppGate> {
   bool _showSplash = true;
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+
+    final Widget screen;
+    if (_showSplash) {
+      screen = SplashScreen(onDone: () => setState(() => _showSplash = false));
+    } else if (!auth.onboardingSeen) {
+      screen = OnboardingScreen(onDone: auth.completeOnboarding);
+    } else if (!auth.isAuthenticated) {
+      screen = const AuthFlow();
+    } else {
+      screen = const LuminaShell();
+    }
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 500),
-      child: _showSplash
-          ? SplashScreen(onDone: () => setState(() => _showSplash = false))
-          : const LuminaShell(),
+      child: screen,
     );
   }
 }

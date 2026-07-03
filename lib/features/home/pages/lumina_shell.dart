@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/lumina_context.dart';
+import '../../../core/widgets/book_page_frame.dart';
 import '../../../core/widgets/lumina_bottom_nav.dart';
 import '../../favorites/pages/favorites_tab.dart';
 import '../../search/pages/search_tab.dart';
+import '../../settings/pages/settings_tab.dart';
 import 'home_tab.dart';
 
 /// The persistent app shell: Home / Search / Favorites tabs in an [IndexedStack]
@@ -31,13 +33,14 @@ class _LuminaShellState extends State<LuminaShell> {
       LuminaNavItem(Icons.home_outlined, s.navHome),
       LuminaNavItem(Icons.search, s.navSearch),
       LuminaNavItem(Icons.favorite_border, s.navFav),
+      LuminaNavItem(Icons.settings_outlined, s.navSettings),
     ];
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(6),
-          child: _BookPageFrame(
+          child: BookPageFrame(
             child: Stack(
               children: [
                 Positioned.fill(
@@ -47,6 +50,7 @@ class _LuminaShellState extends State<LuminaShell> {
                       HomeTab(onSeeAll: () => _go(1)),
                       const SearchTab(),
                       const FavoritesTab(),
+                      const SettingsTab(),
                     ],
                   ),
                 ),
@@ -69,44 +73,3 @@ class _LuminaShellState extends State<LuminaShell> {
   }
 }
 
-/// Clips [child] to the rounded book-page rectangle and draws the gold double
-/// border on top, so all content stays neatly inside the frame.
-class _BookPageFrame extends StatelessWidget {
-  final Widget child;
-  const _BookPageFrame({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.lumina;
-    return Stack(
-      children: [
-        // Content, clipped to the frame and bordered on top.
-        Positioned.fill(
-          child: Container(
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
-            foregroundDecoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: tokens.frame, width: 1.4),
-            ),
-            child: child,
-          ),
-        ),
-        // Inner hairline border.
-        Positioned.fill(
-          child: IgnorePointer(
-            child: Padding(
-              padding: const EdgeInsets.all(5),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(26),
-                  border: Border.all(color: tokens.frame2, width: 1),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
