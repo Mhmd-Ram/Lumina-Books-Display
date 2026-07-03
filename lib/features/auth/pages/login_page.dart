@@ -3,13 +3,19 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/lumina_context.dart';
 import '../../../core/widgets/lumina_primary_button.dart';
+import '../auth_error_l10n.dart';
 import '../providers/auth_provider.dart';
+import '../services/auth_service.dart';
 import '../widgets/auth_scaffold.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/google_button.dart';
 
-/// Sign-in screen. Phase 1 wires the buttons to the mock [AuthProvider]; Phase 2
-/// swaps those calls for real Firebase Auth (plus validation + error messages).
+/// Basic email shape check for client-side validation before hitting Firebase.
+final _emailRe = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+/// Sign-in screen, wired to Firebase Auth via [AuthProvider]: validates input,
+/// shows a spinner while signing in, and surfaces localized errors. The app
+/// gate switches to the shell automatically on the auth-state change.
 class LoginPage extends StatefulWidget {
   /// Switches the auth flow to the Sign-up screen.
   final VoidCallback onGoSignup;
@@ -23,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _obscure = true;
+  bool _busy = false;
 
   @override
   void dispose() {
@@ -31,15 +38,72 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _submit() {
-    FocusScope.of(context).unfocus();
-    context.read<AuthProvider>().signIn(
-      email: _email.text,
-      password: _password.text,
+  void _snack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
-  void _google() => context.read<AuthProvider>().signInWithGoogle();
+  Future<void> _submit() async {
+    if (_busy) return;
+    FocusScope.of(context).unfocus();
+    final s = context.strings;
+    final email = _email.text.trim();
+    final password = _password.text;
+
+    final error = email.isEmpty
+        ? s.enterEmail
+        : !_emailRe.hasMatch(email)
+        ? s.invalidEmail
+        : password.isEmpty
+        ? s.enterPassword
+        : null;
+    if (error != null) {
+      _snack(error);
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+    setState(() => _busy = true);
+    try {
+      await auth.signIn(email: email, password: password);
+      // The app gate switches to the shell on the auth-state change.
+    } on AuthFailure catch (f) {
+      if (mounted) _snack(f.type.message(s));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _google() async {
+    if (_busy) return;
+    final s = context.strings;
+    final auth = context.read<AuthProvider>();
+    setState(() => _busy = true);
+    try {
+      await auth.signInWithGoogle();
+    } on AuthFailure catch (f) {
+      if (mounted) _snack(f.type.message(s));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _forgot() async {
+    final s = context.strings;
+    final email = _email.text.trim();
+    if (email.isEmpty || !_emailRe.hasMatch(email)) {
+      _snack(s.invalidEmail);
+      return;
+    }
+    final auth = context.read<AuthProvider>();
+    try {
+      await auth.sendPasswordReset(email);
+      if (mounted) _snack(s.resetSent);
+    } on AuthFailure catch (f) {
+      if (mounted) _snack(f.type.message(s));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +137,7 @@ class _LoginPageState extends State<LoginPage> {
         Align(
           alignment: AlignmentDirectional.centerEnd,
           child: GestureDetector(
-            onTap: () {}, // Static in Phase 1.
+            onTap: _forgot,
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
@@ -89,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         const SizedBox(height: 12),
-        LuminaPrimaryButton(label: s.logIn, onPressed: _submit),
+        LuminaPrimaryButton(label: s.logIn, loading: _busy, onPressed: _submit),
         const SizedBox(height: 22),
         const OrDivider(),
         const SizedBox(height: 22),

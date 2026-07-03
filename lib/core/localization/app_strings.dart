@@ -74,6 +74,21 @@ class AppStrings {
   final String alreadyHaveAccount;
   final String tos;
 
+  // Auth — validation + Firebase error messages.
+  final String enterEmail;
+  final String invalidEmail;
+  final String enterPassword;
+  final String passwordTooShort;
+  final String enterName;
+  final String errWrongCredentials;
+  final String errEmailInUse;
+  final String errWeakPassword;
+  final String errNetwork;
+  final String errTooManyRequests;
+  final String errUserDisabled;
+  final String errGeneric;
+  final String resetSent;
+
   // Settings.
   final String navSettings;
   final String settings;
@@ -153,6 +168,19 @@ class AppStrings {
     required this.signUp,
     required this.alreadyHaveAccount,
     required this.tos,
+    required this.enterEmail,
+    required this.invalidEmail,
+    required this.enterPassword,
+    required this.passwordTooShort,
+    required this.enterName,
+    required this.errWrongCredentials,
+    required this.errEmailInUse,
+    required this.errWeakPassword,
+    required this.errNetwork,
+    required this.errTooManyRequests,
+    required this.errUserDisabled,
+    required this.errGeneric,
+    required this.resetSent,
     required this.navSettings,
     required this.settings,
     required this.preferences,
@@ -289,6 +317,19 @@ class AppStrings {
     signUp: 'Sign up',
     alreadyHaveAccount: 'Already have an account?',
     tos: "By signing up you agree to Lumina's Terms of Service and Privacy Policy.",
+    enterEmail: 'Enter your email',
+    invalidEmail: 'Enter a valid email',
+    enterPassword: 'Enter your password',
+    passwordTooShort: 'Password must be at least 6 characters',
+    enterName: 'Enter your name',
+    errWrongCredentials: 'Incorrect email or password.',
+    errEmailInUse: 'An account already exists for this email.',
+    errWeakPassword: 'Please choose a stronger password.',
+    errNetwork: 'No connection. Check your internet and try again.',
+    errTooManyRequests: 'Too many attempts. Please try again later.',
+    errUserDisabled: 'This account has been disabled.',
+    errGeneric: 'Something went wrong. Please try again.',
+    resetSent: 'Password reset email sent. Check your inbox.',
     navSettings: 'Settings',
     settings: 'Settings',
     preferences: 'Preferences',
@@ -368,6 +409,19 @@ class AppStrings {
     signUp: 'إنشاء حساب',
     alreadyHaveAccount: 'لديك حسابٌ بالفعل؟',
     tos: 'بالتسجيل فإنك توافق على شروط الخدمة وسياسة الخصوصية الخاصة بلومينا.',
+    enterEmail: 'أدخل بريدك الإلكتروني',
+    invalidEmail: 'أدخل بريداً إلكترونياً صالحاً',
+    enterPassword: 'أدخل كلمة المرور',
+    passwordTooShort: 'كلمة المرور يجب ألا تقل عن ٦ أحرف',
+    enterName: 'أدخل اسمك',
+    errWrongCredentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    errEmailInUse: 'يوجد حساب بهذا البريد الإلكتروني بالفعل.',
+    errWeakPassword: 'يرجى اختيار كلمة مرور أقوى.',
+    errNetwork: 'لا يوجد اتصال. تحقق من الإنترنت وحاول مجدداً.',
+    errTooManyRequests: 'محاولات كثيرة جداً. يرجى المحاولة لاحقاً.',
+    errUserDisabled: 'تم تعطيل هذا الحساب.',
+    errGeneric: 'حدث خطأ ما. يرجى المحاولة مرة أخرى.',
+    resetSent: 'تم إرسال رسالة إعادة تعيين كلمة المرور. تحقق من بريدك.',
     navSettings: 'الإعدادات',
     settings: 'الإعدادات',
     preferences: 'التفضيلات',
