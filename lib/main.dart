@@ -1,13 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'core/config/api_config.dart';
 import 'core/network/api_client.dart';
+import 'core/settings/prefs_store.dart';
 import 'core/settings/settings_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/pages/auth_flow.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/auth/services/auth_service.dart';
 import 'features/catalog/data/books_repository.dart';
 import 'features/catalog/data/open_library_service.dart';
 import 'features/catalog/providers/books_provider.dart';
@@ -16,15 +19,24 @@ import 'features/favorites/providers/favorites_provider.dart';
 import 'features/home/pages/lumina_shell.dart';
 import 'features/onboarding/pages/onboarding_screen.dart';
 import 'features/splash/pages/splash_screen.dart';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const LuminaApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  final prefs = await PrefsStore.create();
+  runApp(LuminaApp(prefs: prefs));
 }
 
-/// Lumina — a book-discovery app over the Open Library API. State is held in
-/// Provider; the UI is themed light/dark with English/Arabic (RTL) support.
+/// Lumina — a book-discovery app over the Open Library API. Auth is Firebase;
+/// other state is held in Provider; the UI is themed light/dark with
+/// English/Arabic (RTL) support, with the theme + language persisted.
 class LuminaApp extends StatelessWidget {
-  const LuminaApp({super.key});
+  /// Preloaded persisted settings (theme, language, onboarding-seen).
+  final PrefsStore prefs;
+  const LuminaApp({super.key, required this.prefs});
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +55,11 @@ class LuminaApp extends StatelessWidget {
         ChangeNotifierProvider<SearchProvider>(
           create: (context) => SearchProvider(context.read<BooksRepository>()),
         ),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(AuthService(), prefs),
+        ),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider(prefs)),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {

@@ -50,6 +50,10 @@ dependencies:
 
   # Open external links (the details page "More info" → Open Library book page).
   url_launcher: ^6.3.0
+  firebase_core: ^4.11.0
+  firebase_auth: ^6.5.4
+  shared_preferences: ^2.5.5
+  google_sign_in: 6.2.1
 
 dev_dependencies:
   flutter_test:

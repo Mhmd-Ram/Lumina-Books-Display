@@ -1,20 +1,34 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-/// App auth + first-launch state (Provider).
+import '../../../core/settings/prefs_store.dart';
+import '../services/auth_service.dart';
+
+/// App auth + first-launch state (Provider), backed by Firebase Auth.
 ///
-/// Phase 1 is a **mock**: the methods just flip local flags so the whole flow
-/// (onboarding → login/sign-up → home → log out) is navigable without a backend.
-/// The public surface is shaped to match Firebase Auth, so Phase 2 can replace
-/// the bodies with real `FirebaseAuth` calls (and `authStateChanges` for
-/// auto-login) without changing any screen.
+/// It subscribes to [AuthService.authState], so a returning user is auto-logged
+/// in straight to the shell and a sign-out returns to Login. The public surface
+/// is unchanged from the Phase 1 mock, so the auth screens did not change shape
+/// — the method bodies just delegate to [AuthService] now, and failures surface
+/// as [AuthFailure] for the pages to message.
 class AuthProvider extends ChangeNotifier {
+  AuthProvider(this._service, this._prefs) {
+    _onboardingSeen = _prefs.onboardingSeen;
+    _sub = _service.authState().listen(_onAuthChanged);
+  }
+
+  final AuthService _service;
+  final PrefsStore _prefs;
+  StreamSubscription<User?>? _sub;
+
   bool _onboardingSeen = false;
   bool _isAuthenticated = false;
   String? _displayName;
   String _email = '';
 
-  /// Whether the onboarding slides have been completed/skipped this session.
-  /// (Phase 2 persists this via `shared_preferences` so it is truly once-only.)
+  /// Whether onboarding has ever been completed/skipped (persisted).
   bool get onboardingSeen => _onboardingSeen;
 
   /// Whether a user is signed in — drives the gate between Login and the shell.
@@ -32,49 +46,57 @@ class AuthProvider extends ChangeNotifier {
   /// First letter for the profile avatar.
   String get initial => displayName[0].toUpperCase();
 
-  void completeOnboarding() {
+  void _onAuthChanged(User? user) {
+    _isAuthenticated = user != null;
+    _email = user?.email ?? '';
+    final name = user?.displayName;
+    _displayName = (name != null && name.trim().isNotEmpty)
+        ? name
+        : (user?.email != null ? _nameFromEmail(user!.email!) : null);
+    notifyListeners();
+  }
+
+  Future<void> completeOnboarding() async {
     if (_onboardingSeen) return;
     _onboardingSeen = true;
     notifyListeners();
+    await _prefs.setOnboardingSeen(true);
   }
 
-  Future<void> signIn({
-    required String email,
-    required String password,
-  }) async {
-    _email = email.trim();
-    _displayName = _nameFromEmail(_email);
-    _isAuthenticated = true;
-    notifyListeners();
-  }
+  /// Sign in with email/password. Throws [AuthFailure] on error.
+  Future<void> signIn({required String email, required String password}) =>
+      _service.signIn(email: email.trim(), password: password);
 
+  /// Register a new account. Throws [AuthFailure] on error.
   Future<void> signUp({
     required String name,
     required String email,
     required String password,
-  }) async {
-    _email = email.trim();
-    _displayName = name.trim().isEmpty ? _nameFromEmail(_email) : name.trim();
-    _isAuthenticated = true;
-    notifyListeners();
+  }) => _service.signUp(
+    name: name.trim(),
+    email: email.trim(),
+    password: password,
+  );
+
+  /// Google Sign-In. Silently no-ops if the user dismisses the picker; throws
+  /// [AuthFailure] on a real error.
+  Future<void> signInWithGoogle() => _service.signInWithGoogle();
+
+  /// Send a password-reset email. Throws [AuthFailure] on error.
+  Future<void> sendPasswordReset(String email) =>
+      _service.sendPasswordReset(email.trim());
+
+  Future<void> signOut() => _service.signOut();
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 
-  Future<void> signInWithGoogle() async {
-    _email = 'reader@gmail.com';
-    _displayName = 'Amina Reader';
-    _isAuthenticated = true;
-    notifyListeners();
-  }
-
-  Future<void> signOut() async {
-    // Keep [onboardingSeen] true — logging out returns to Login, not onboarding.
-    _isAuthenticated = false;
-    _displayName = null;
-    _email = '';
-    notifyListeners();
-  }
-
-  /// Turns "amina.reader@example.com" into a friendly "Amina Reader".
+  /// Turns "amina.reader@example.com" into a friendly "Amina Reader" when the
+  /// account has no display name (e.g. an email/password signup we couldn't
+  /// name yet).
   static String _nameFromEmail(String email) {
     final local = email.split('@').first;
     final words = local

@@ -3,13 +3,19 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/lumina_context.dart';
 import '../../../core/widgets/lumina_primary_button.dart';
+import '../auth_error_l10n.dart';
 import '../providers/auth_provider.dart';
+import '../services/auth_service.dart';
 import '../widgets/auth_scaffold.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/google_button.dart';
 
-/// Registration screen. Phase 1 wires the buttons to the mock [AuthProvider];
-/// Phase 2 swaps those calls for real Firebase Auth (plus validation + errors).
+/// Basic email shape check for client-side validation before hitting Firebase.
+final _emailRe = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+
+/// Registration screen, wired to Firebase Auth via [AuthProvider]: validates
+/// input, shows a spinner while creating the account, and surfaces localized
+/// errors. The app gate switches to the shell on the auth-state change.
 class SignupPage extends StatefulWidget {
   /// Switches the auth flow to the Login screen.
   final VoidCallback onGoLogin;
@@ -24,6 +30,7 @@ class _SignupPageState extends State<SignupPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _obscure = true;
+  bool _busy = false;
 
   @override
   void dispose() {
@@ -33,16 +40,58 @@ class _SignupPageState extends State<SignupPage> {
     super.dispose();
   }
 
-  void _submit() {
-    FocusScope.of(context).unfocus();
-    context.read<AuthProvider>().signUp(
-      name: _name.text,
-      email: _email.text,
-      password: _password.text,
+  void _snack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
     );
   }
 
-  void _google() => context.read<AuthProvider>().signInWithGoogle();
+  Future<void> _submit() async {
+    if (_busy) return;
+    FocusScope.of(context).unfocus();
+    final s = context.strings;
+    final name = _name.text.trim();
+    final email = _email.text.trim();
+    final password = _password.text;
+
+    final error = name.isEmpty
+        ? s.enterName
+        : email.isEmpty
+        ? s.enterEmail
+        : !_emailRe.hasMatch(email)
+        ? s.invalidEmail
+        : password.length < 6
+        ? s.passwordTooShort
+        : null;
+    if (error != null) {
+      _snack(error);
+      return;
+    }
+
+    final auth = context.read<AuthProvider>();
+    setState(() => _busy = true);
+    try {
+      await auth.signUp(name: name, email: email, password: password);
+    } on AuthFailure catch (f) {
+      if (mounted) _snack(f.type.message(s));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _google() async {
+    if (_busy) return;
+    final s = context.strings;
+    final auth = context.read<AuthProvider>();
+    setState(() => _busy = true);
+    try {
+      await auth.signInWithGoogle();
+    } on AuthFailure catch (f) {
+      if (mounted) _snack(f.type.message(s));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +130,7 @@ class _SignupPageState extends State<SignupPage> {
           onSubmitted: (_) => _submit(),
         ),
         const SizedBox(height: 22),
-        LuminaPrimaryButton(label: s.signUp, onPressed: _submit),
+        LuminaPrimaryButton(label: s.signUp, loading: _busy, onPressed: _submit),
         const SizedBox(height: 22),
         const OrDivider(),
         const SizedBox(height: 22),

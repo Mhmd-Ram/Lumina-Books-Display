@@ -10,10 +10,15 @@ class LuminaPrimaryButton extends StatefulWidget {
   final String label;
   final VoidCallback? onPressed;
 
+  /// When true, the button shows a spinner instead of the label and ignores
+  /// taps — used while an async submit (login / sign-up) is in flight.
+  final bool loading;
+
   const LuminaPrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
+    this.loading = false,
   });
 
   @override
@@ -29,18 +34,21 @@ class _LuminaPrimaryButtonState extends State<LuminaPrimaryButton> {
 
   @override
   Widget build(BuildContext context) {
-    final enabled = widget.onPressed != null;
+    // The button looks solid (full opacity) whenever it has an action; the
+    // spinner alone signals the in-flight state. Taps are ignored while loading.
+    final hasAction = widget.onPressed != null;
+    final enabled = hasAction && !widget.loading;
 
     return GestureDetector(
       onTapDown: enabled ? (_) => _setPressed(true) : null,
       onTapCancel: enabled ? () => _setPressed(false) : null,
       onTapUp: enabled ? (_) => _setPressed(false) : null,
-      onTap: widget.onPressed,
+      onTap: enabled ? widget.onPressed : null,
       child: AnimatedScale(
         scale: _pressed ? 0.98 : 1,
         duration: const Duration(milliseconds: 120),
         child: Opacity(
-          opacity: enabled ? 1 : 0.6,
+          opacity: hasAction ? 1 : 0.6,
           child: Container(
             height: 58,
             alignment: Alignment.center,
@@ -60,14 +68,23 @@ class _LuminaPrimaryButtonState extends State<LuminaPrimaryButton> {
                 ),
               ],
             ),
-            child: Text(
-              widget.label,
-              style: context.sans(
-                fontSize: 16.5,
-                fontWeight: FontWeight.w800,
-                color: Colors.white,
-              ),
-            ),
+            child: widget.loading
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.4,
+                      valueColor: AlwaysStoppedAnimation(Colors.white),
+                    ),
+                  )
+                : Text(
+                    widget.label,
+                    style: context.sans(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
           ),
         ),
       ),
